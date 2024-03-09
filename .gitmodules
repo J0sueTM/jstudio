@@ -1,0 +1,3 @@
+[submodule "vendor/x11"]
+	path = vendor/x11
+	url = https://github.com/mirror/libX11
