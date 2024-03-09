@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <X11/Xlib.h>
 
 int main(void) {
@@ -21,13 +22,29 @@ int main(void) {
   XClearWindow(display, window);
   XMapRaised(display, window);
 
+  Atom atom_wm_delete_window = XInternAtom(
+    display,
+    "WM_DELETE_WINDOW",
+    False
+  );
+  XSetWMProtocols(display, window, &atom_wm_delete_window, 1);
+
   XEvent evt;
-  while (1) {
-    XNextEvent(display, &evt);
+  bool is_running = true;
+  while (is_running) {
+    if (XPending(display) > 0) {
+      XNextEvent(display, &evt);
+      if (evt.type == ClientMessage) {
+        if (evt.xclient.data.l[0] == atom_wm_delete_window) {
+          is_running = false;
+        }
+      } else if (evt.type == DestroyNotify) {
+        is_running = false;
+      }
+    }
   }
 
   XDestroyWindow(display, window);
-  XFree(screen);
   XCloseDisplay(display);
 
   return 0;
